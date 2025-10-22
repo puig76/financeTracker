@@ -1,5 +1,7 @@
 using FinanceTracker.Web;
+using FinanceTracker.Web.Clients;
 using FinanceTracker.Web.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +13,12 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddOutputCache();
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddHttpClient<WeatherApiClient>(client =>
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+
+builder.Services.AddHttpClient<AuthApiClient>(client =>
     {
         // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
         // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
