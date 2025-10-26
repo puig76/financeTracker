@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.Mvc
 
 @inject AuthApiClient AuthApiClient
+@inject IToastService toastService
 @inject ProtectedSessionStorage ProtectedSessionStorage
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
@@ -23,7 +24,7 @@
             <ValidationSummary />
 
             <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
+                <label for="email" class="form-label">Username</label>
                 <InputText id="email" class="form-control" @bind-Value="loginModel.UserName" />
             </div>
             <div class="mb-3">
@@ -51,7 +52,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            toastService.ShowError("Login failed : username or password is incorrect.");
         }
 
     }

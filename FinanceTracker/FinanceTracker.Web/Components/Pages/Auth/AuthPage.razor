@@ -1,0 +1,17 @@
+﻿<BlazoredToasts />
+
+@if (isLogin)
+{
+    <Login />
+    <button class="link" @onclick="() => isLogin = false">Register</button>
+}
+else
+{
+    <Register />
+}
+
+
+@code {
+    private bool isLogin = true;
+
+}

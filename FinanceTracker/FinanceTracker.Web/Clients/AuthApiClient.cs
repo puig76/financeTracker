@@ -11,8 +11,14 @@ public class AuthApiClient(HttpClient httpClient)
         var response = await httpClient.PostAsJsonAsync("api/auth/login", new { UserName = name, Password = password });
         response.EnsureSuccessStatusCode();
         var token = await response.Content.ReadFromJsonAsync<TokenResponse>();
-        
+
         return token.AccessToken ?? throw new InvalidOperationException("Token not received from the server.");
+    }
+
+    public async Task RegisterAsync(string name, string password, string email)
+    {
+        var response = await httpClient.PostAsJsonAsync("api/auth/register", new { UserName = name, Email = email, Password = password });
+        response.EnsureSuccessStatusCode();
     }
 }
 

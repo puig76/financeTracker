@@ -1,4 +1,4 @@
-using FinanceTracker.Web;
+using Blazored.Toast;
 using FinanceTracker.Web.Clients;
 using FinanceTracker.Web.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -15,6 +15,8 @@ builder.Services.AddRazorComponents()
 builder.Services.AddOutputCache();
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddBlazoredToast();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
