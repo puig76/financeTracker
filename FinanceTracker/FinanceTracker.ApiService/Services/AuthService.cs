@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using FinanceTracker.ApiService.Data;
 using FinanceTracker.ApiService.Entities;
+using FinanceTracker.ApiService.Mapping;
 using FinanceTracker.ApiService.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -41,12 +42,7 @@ public class AuthService(FinanceDBContext context, IConfiguration configuration)
             return null;
         }
 
-        User user = new();
-        var hashedPassword = new PasswordHasher<User>().HashPassword(user, request.Password);
-
-        user.PasswordHash = hashedPassword;
-        user.Username = request.Username;
-        user.Email = request.Email;
+        var user = request.ToEntity();
 
         context.Users.Add(user);
         await context.SaveChangesAsync();
