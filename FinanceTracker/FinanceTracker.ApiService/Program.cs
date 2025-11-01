@@ -4,15 +4,30 @@ using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using FinanceTracker.ApiService.Controllers;
+using FinanceTracker.ApiService.ExceptionsHandler;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddProblemDetails(o =>
+{
+    o.CustomizeProblemDetails = (context) =>
+    {
+        context.ProblemDetails.Instance = $"{context.HttpContext.Request?.Method} {context.HttpContext.Request?.Path.Value}";
+        context.ProblemDetails.Extensions.Add("requestId",context.HttpContext.TraceIdentifier);
+        Activity? activity = context.HttpContext.Features.Get<IHttpActivityFeature>()?.Activity;
+        context.ProblemDetails.Extensions.Add("traceId1", activity?.Id);
+    };
+});
+builder.Services.AddExceptionHandler<Global_ExceptionHandler>();
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 builder.Services.AddAuthorization();
 
-// Add services to the container.
-builder.Services.AddProblemDetails();
+
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -27,9 +42,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["AppSettings:Issuer"],
-            ValidAudience = builder.Configuration["AppSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Secret"]))
+            ValidIssuer = builder.Configuration["AppSettings:Issuer"] ?? "FinanceTrackerApi",
+            ValidAudience = builder.Configuration["AppSettings:Audience"] ?? "FinanceTrackerApiClient",
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Secret"]?? throw new InvalidOperationException("JWT Secret not configured.")))
         };
     });
 
@@ -48,6 +63,8 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
+app.UseExceptionHandler();
+
 app.UseAuthorization();
 
 app.MapAuthEndpoints();

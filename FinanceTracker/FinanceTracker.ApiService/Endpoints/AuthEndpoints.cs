@@ -1,4 +1,5 @@
 
+using System.Security.Claims;
 using FinanceTracker.ApiService.Models;
 using FinanceTracker.ApiService.Services;
 
@@ -41,8 +42,62 @@ public static class AuthEndpoints
             return Results.Ok(result);
         });
 
+        group.MapGet("/me", async (ClaimsPrincipal user, IAuthService authService) =>
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var userId = userIdClaim.Value;
+            var userInfo = await authService.GetUserByIdAsync(userId);
+            if (userInfo is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(userInfo);
+        }).RequireAuthorization();
+
         group.MapPost("/logout", () => Results.Ok()).RequireAuthorization();
 
+        group.MapPatch("/change-password", async (ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO, IAuthService authService) =>
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var userId = userIdClaim.Value;
+            var result = await authService.ChangePasswordAsync(changePasswordDTO, userId);
+            if (!result)
+            {
+                return Results.BadRequest("Password change failed.");
+            }
+
+            return Results.Ok("Password changed successfully.");
+        }).RequireAuthorization();
+
+        group.MapPut("/update-profile", async (ClaimsPrincipal user, UpdateUserDTO updateUserDTO, IAuthService authService) =>
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var userId = userIdClaim.Value;
+            var result = await authService.UpdateUserProfileAsync(updateUserDTO, userId);
+            if (!result)
+            {
+                return Results.BadRequest("Profile update failed.");
+            }
+
+            return Results.Ok("Profile updated successfully.");
+        }).RequireAuthorization();
+        
         return group;
     }
 }

@@ -34,7 +34,7 @@ public static class UserMapper
         return user;
     }
     
-    public static UserDTO ToModel(this User userEntity)
+    public static UserDTO ToDTO(this User userEntity)
     {
         if (userEntity == null) throw new ArgumentNullException(nameof(userEntity));
 

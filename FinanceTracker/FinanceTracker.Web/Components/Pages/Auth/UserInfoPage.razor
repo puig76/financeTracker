@@ -1,0 +1,48 @@
+﻿@page "/userinfo"
+@using Blazored.Toast
+
+@using FinanceTracker.Web.Clients
+@using FinanceTracker.Web.Models
+@rendermode InteractiveServer
+
+@inject AuthApiClient AuthApiClient
+@inject IToastService toastService
+
+<h3>UserInfoPage</h3>
+
+<div>
+    @if (userInfo is not null)
+    {
+        <p><strong>User ID:</strong> @userInfo.Id</p>
+        <p><strong>Email:</strong> @userInfo.Email</p>
+        <p><strong>Full Name:</strong> @userInfo.Username</p>
+    }
+    else
+    {
+        <p>User information is not available.</p>
+    }
+</div>
+
+@code {
+
+    UserInfo? userInfo;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            userInfo = await AuthApiClient.GetCurrentUserAsync();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Error fetching user info: {ex.Message}");
+        }
+
+        StateHasChanged();
+    }
+}

@@ -68,7 +68,7 @@ public class AuthService(FinanceDBContext context, IConfiguration configuration)
         var refreshToken = GenerateRefreshToken();
         user.RefreshToken = refreshToken;
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
 
         return refreshToken;
     }
@@ -107,5 +107,40 @@ public class AuthService(FinanceDBContext context, IConfiguration configuration)
 
         return user;
     }
+    public Task<UserDTO?> GetUserByIdAsync(string userId)
+    {
+        var userGuid = Guid.Parse(userId);
+        return context.Users
+            .Where(u => u.Id == userGuid)
+            .Select(u => u.ToDTO())
+            .FirstOrDefaultAsync();
+    }
+    public async Task<bool> ChangePasswordAsync(ChangePasswordDTO changePasswordDTO, string userId)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == Guid.Parse(userId));
+        if (user is null)
+            return false;
+
+        var verificationResult = new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, changePasswordDTO.CurrentPassword);
+        if (verificationResult == PasswordVerificationResult.Failed)
+            return false;
+
+        user.PasswordHash = new PasswordHasher<User>().HashPassword(user, changePasswordDTO.NewPassword);
+        await context.SaveChangesAsync();
+        return true;
+    }
+    public async Task<bool> UpdateUserProfileAsync(UpdateUserDTO updateUserDTO, string userId)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == Guid.Parse(userId));
+        if (user is null)
+            return false;
+
+        user.Email = updateUserDTO.Email;
+        user.Username = updateUserDTO.UserName;
+
+        await context.SaveChangesAsync();
+        return true;
+    }
 
 }
+

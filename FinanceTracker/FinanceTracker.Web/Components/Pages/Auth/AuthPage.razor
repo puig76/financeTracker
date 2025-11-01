@@ -1,14 +1,18 @@
 ﻿<BlazoredToasts />
 
-@if (isLogin)
-{
-    <Login />
-    <button class="link" @onclick="() => isLogin = false">Register</button>
-}
-else
-{
-    <Register />
-}
+<div class="position-absolute top-50 start-50 translate-middle w-50 ">
+    @if (isLogin)
+    {
+        <Login />
+        <button type="button" class="btn btn-link" @onclick="() => isLogin = false">Register</button>
+    }
+    else
+    {
+        <Register />
+        <button type="button" class="btn btn-link" @onclick="() => isLogin = true">Login</button>
+    }
+</div>
+
 
 
 @code {

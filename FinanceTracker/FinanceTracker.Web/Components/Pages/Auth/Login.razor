@@ -8,9 +8,11 @@
 @using Microsoft.AspNetCore.Mvc
 
 @inject AuthApiClient AuthApiClient
+@inject IAccessTokenProvider AccessTokenProvider
 @inject IToastService toastService
 @inject ProtectedSessionStorage ProtectedSessionStorage
 @inject NavigationManager Navigation
+
 @rendermode InteractiveServer
 @attribute [ValidateAntiForgeryToken]
 
@@ -46,11 +48,11 @@
         {
             var token = await AuthApiClient.LoginAsync(loginModel.UserName, loginModel.Password);
 
-            await ProtectedSessionStorage.SetAsync("token", token);
+            await AccessTokenProvider.SetAccessTokenAsync(token);
             
             Navigation.Refresh(true);
         }
-        catch (Exception ex)
+        catch 
         {
             toastService.ShowError("Login failed : username or password is incorrect.");
         }

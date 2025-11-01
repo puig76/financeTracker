@@ -43,7 +43,7 @@
     {
         try
         {
-            await AuthApiClient.RegisterAsync(registerModel.Username, registerModel.Password, registerModel.Email);
+            await AuthApiClient.RegisterAsync(registerModel.Username, registerModel.Password, registerModel.Email!);
             Navigation.NavigateTo("/", true);
         }
         catch (Exception ex)
