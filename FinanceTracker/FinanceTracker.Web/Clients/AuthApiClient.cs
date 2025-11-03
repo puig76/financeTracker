@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using FinanceTracker.Web.Models;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
@@ -60,6 +61,21 @@ public class AuthApiClient(HttpClient httpClient, IAccessTokenProvider storage)
     private async Task AddAuthorization()
     {
         var token = await storage.GetAccessTokenAsync();
+        if (token is null) return;
+        if (TokenValidator.IsTokenExpired(token))
+        {
+            var refresh = await storage.GetRefreshTokenAsync();
+            if (refresh != null)
+            {
+                var userId = TokenValidator.GetJWT(token).Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+                var newToken = await RefreshTokenAsync(userId, refresh);
+                if (newToken != null)
+                {
+                    await storage.SetAccessTokenAsync(newToken);
+                    token = newToken.AccessToken;
+                }
+            }
+        }
 
         httpClient.DefaultRequestHeaders.Authorization =
             token is not null ? new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token) : null;

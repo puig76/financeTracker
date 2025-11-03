@@ -25,7 +25,6 @@ builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<IAccessTokenProvider, AccessTokenProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
-builder.Services.AddScoped<AuthTokenHandler>();
 builder.Services.AddHttpClient<AuthApiClient>(client =>
     {
         // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.

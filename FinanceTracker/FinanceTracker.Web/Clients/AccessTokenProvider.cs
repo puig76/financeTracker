@@ -1,4 +1,5 @@
 
+using System.IdentityModel.Tokens.Jwt;
 using FinanceTracker.Web.Models;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
@@ -11,9 +12,11 @@ public class AccessTokenProvider(ProtectedSessionStorage seccureSessionStorage) 
         try
         {
             var result = await seccureSessionStorage.GetAsync<string>("token");
-            return result.Success ? result.Value : null;
+            var token = result.Success ? result.Value : null;
+                
+            return token;
         }
-        catch 
+        catch
         {
             return null;
         }
@@ -60,4 +63,5 @@ public class AccessTokenProvider(ProtectedSessionStorage seccureSessionStorage) 
         }
 
     }
+
 }
