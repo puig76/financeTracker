@@ -90,7 +90,7 @@ public class AuthService(FinanceDBContext context, IConfiguration configuration)
             issuer: configuration.GetSection("AppSettings:Issuer").Value!,
             audience: configuration.GetSection("AppSettings:Audience").Value!,
             claims: claims,
-            expires: DateTime.Now.AddDays(configuration.GetValue<int>("AppSettings:ExpirationInDays")!),
+            expires: DateTime.Now.AddMinutes(configuration.GetValue<int>("AppSettings:ExpirationInMins")!),
             signingCredentials: creds);
 
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
