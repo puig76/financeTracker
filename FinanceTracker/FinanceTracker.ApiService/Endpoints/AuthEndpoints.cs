@@ -60,7 +60,17 @@ public static class AuthEndpoints
             return Results.Ok(userInfo);
         }).RequireAuthorization();
 
-        group.MapPost("/logout", () => Results.Ok()).RequireAuthorization();
+        group.MapPost("/logout", async (ClaimsPrincipal user, IAuthService authService) =>
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim is not null)
+            {
+                var userId = userIdClaim.Value;
+                await authService.LogoutAsync(userId);
+            }
+
+            return Results.Ok();
+        }).RequireAuthorization();
 
         group.MapPatch("/change-password", async (ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO, IAuthService authService) =>
         {

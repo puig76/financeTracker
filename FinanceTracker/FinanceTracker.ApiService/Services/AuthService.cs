@@ -49,6 +49,19 @@ public class AuthService(FinanceDBContext context, IConfiguration configuration)
 
         return user;
     }   
+    public async Task LogoutAsync(string userId)
+    {
+        var userEntity = await context.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+        if (userEntity is null)
+        {
+            return;
+        }
+
+        // Invalidate the refresh token
+        userEntity.RefreshToken = null;
+        userEntity.RefreshTokenExpiryTime = null;
+        await context.SaveChangesAsync();
+    }
     private async Task<TokenResponseDTO> CreateTokenResponse(User user)
     {
         return new TokenResponseDTO(

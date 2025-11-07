@@ -1,0 +1,19 @@
+﻿@page "/logout"
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject NavigationManager NavigationManager
+@inject AuthApiClient AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<button type="button" class="btn btn-link" @onclick="LogoutUser">Logout</button>
+
+@code {
+    private async Task LogoutUser()
+    {
+        await AuthService.LogoutAsync();
+
+        ((CustomAuthStateProvider)AuthStateProvider).NotifyUserLogout();
+
+        NavigationManager.NavigateTo("/");
+    }
+}

@@ -13,7 +13,7 @@ public class AuthApiClient(HttpClient httpClient, IAccessTokenProvider storage)
         var response = await httpClient.PostAsJsonAsync("auth/login", new { UserName = name, Password = password });
         response.EnsureSuccessStatusCode();
         var token = await response.Content.ReadFromJsonAsync<TokenResponse>();
-        
+
         return token ?? throw new InvalidOperationException("Failed to deserialize token response.");
     }
 
@@ -34,7 +34,7 @@ public class AuthApiClient(HttpClient httpClient, IAccessTokenProvider storage)
 
     public async Task<UserInfo> GetCurrentUserAsync()
     {
-        await AddAuthorization(); 
+        await AddAuthorization();
         var response = await httpClient.GetAsync("auth/me");
         response.EnsureSuccessStatusCode();
         var userInfo = await response.Content.ReadFromJsonAsync<UserInfo>();
@@ -57,7 +57,7 @@ public class AuthApiClient(HttpClient httpClient, IAccessTokenProvider storage)
         var response = await httpClient.PutAsJsonAsync("auth/update-profile", updateUser);
         return response.IsSuccessStatusCode;
     }
-    
+
     private async Task AddAuthorization()
     {
         var token = await storage.GetAccessTokenAsync();
@@ -81,4 +81,12 @@ public class AuthApiClient(HttpClient httpClient, IAccessTokenProvider storage)
             token is not null ? new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token) : null;
     }
 
+    public async Task LogoutAsync()
+    {
+        await storage.RemoveTokensAsync();
+
+        await AddAuthorization();
+
+        var response = await httpClient.PostAsync("auth/logout", null);
+    }
 }

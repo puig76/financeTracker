@@ -13,9 +13,17 @@
 <div>
     @if (userInfo is not null)
     {
-        <p><strong>User ID:</strong> @userInfo.Id</p>
-        <p><strong>Email:</strong> @userInfo.Email</p>
-        <p><strong>Full Name:</strong> @userInfo.Username</p>
+        <div>
+            <p><strong>Username:</strong> @userInfo.Username</p>
+            <p><strong>Email:</strong> @userInfo.Email</p>
+        </div>
+        <nav style="--bs-breadcrumb-divider: '|';" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/userinfo/edit">Edit</a></li>
+                <li class="breadcrumb-item"><a href="/userinfo/password/change">Change Password</a></li>
+                <li class="breadcrumb-item"><a href="/">Back to Home</a></li>
+            </ol>
+        </nav>   
     }
     else
     {
