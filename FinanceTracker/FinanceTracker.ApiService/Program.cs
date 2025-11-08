@@ -7,6 +7,7 @@ using FinanceTracker.ApiService.Controllers;
 using FinanceTracker.ApiService.ExceptionsHandler;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
+using FinanceTracker.ApiService.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,7 @@ app.UseExceptionHandler();
 app.UseAuthorization();
 
 app.MapAuthEndpoints();
+app.MapCategoryEndpoints();
    
 app.MigrateDatabase();
 app.Run();

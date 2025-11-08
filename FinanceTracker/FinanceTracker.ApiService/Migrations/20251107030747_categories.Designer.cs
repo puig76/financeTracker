@@ -3,6 +3,7 @@ using System;
 using FinanceTracker.ApiService.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FinanceTracker.ApiService.Migrations
 {
     [DbContext(typeof(FinanceDBContext))]
-    partial class FinanceDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251107030747_categories")]
+    partial class categories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,38 +43,6 @@ namespace FinanceTracker.ApiService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Expenses related to food and groceries.",
-                            Name = "Food"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Expenses related to transportation and travel.",
-                            Name = "Transportation"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Expenses related to utilities such as electricity, water, and internet.",
-                            Name = "Utilities"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Expenses related to entertainment and leisure activities.",
-                            Name = "Entertainment"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Description = "Expenses related to medical and healthcare services.",
-                            Name = "Healthcare"
-                        });
                 });
 
             modelBuilder.Entity("FinanceTracker.ApiService.Entities.User", b =>
