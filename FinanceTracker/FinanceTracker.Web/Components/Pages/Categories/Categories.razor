@@ -1,0 +1,28 @@
+﻿@page "/categories"
+
+@using FinanceTracker.Web.Models.Categories
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+
+@inject CategoryApiClient categoryApiClient
+
+<h3>Categories</h3>
+
+<div class="table table-bordered table-striped">
+    <QuickGrid Items="categories">
+        <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Description)" Sortable="true" />
+    </QuickGrid>
+</div>
+
+@code {
+    private IQueryable<CategoryModel> categories = new List<CategoryModel>().AsQueryable();
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = (await categoryApiClient.GetCategoriesAsync()).AsQueryable();
+    }
+}
+
+
