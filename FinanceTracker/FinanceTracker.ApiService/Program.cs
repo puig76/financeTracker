@@ -8,6 +8,8 @@ using FinanceTracker.ApiService.ExceptionsHandler;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
 using FinanceTracker.ApiService.Endpoints;
+using FinanceTracker.ApiService.Services.Transaction;
+using FinanceTracker.ApiService.Services.Category;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +52,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 var app = builder.Build();
 
@@ -70,6 +74,7 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();
+app.MapTransactionEndpoints();
    
 app.MigrateDatabase();
 app.Run();

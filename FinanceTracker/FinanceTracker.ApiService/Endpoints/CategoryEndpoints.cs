@@ -1,10 +1,6 @@
-using System;
 using FinanceTracker.ApiService.Data;
-using FinanceTracker.ApiService.Entities;
-using FinanceTracker.ApiService.Mapping;
 using FinanceTracker.ApiService.Models.Categories;
-using Microsoft.EntityFrameworkCore;
-
+using FinanceTracker.ApiService.Services.Category;
 namespace FinanceTracker.ApiService.Endpoints;
 
 public static class CategoryEndpoints
@@ -13,46 +9,34 @@ public static class CategoryEndpoints
     {
         var group = routes.MapGroup("/categories");
 
-        group.MapGet("/", async (FinanceDBContext db) =>
+        group.MapGet("/", async (ICategoryService categoryService) =>
         {
-            var categories = await db.Categories.ToListAsync();
+            var categories = await categoryService.GetAllCategoriesAsync();
             return Results.Ok(categories);
         });
 
-        group.MapGet("/{id}", async (int id, FinanceDBContext db) =>
+        group.MapGet("/{id}", async (int id, ICategoryService categoryService) =>
         {
-            var category = await db.Categories.FindAsync(id);
+            var category = await categoryService.GetCategoryByIdAsync(id);
             return category is not null ? Results.Ok(category) : Results.NotFound();
         });
 
-        group.MapPost("/", async (NewCategoryDTO newCategory, FinanceDBContext db) =>
+        group.MapPost("/", async (NewCategoryDTO newCategory, ICategoryService categoryService) =>
         {
-            var category = newCategory.ToEntity();
-            db.Categories.Add(category);
-            await db.SaveChangesAsync();
+            var category = await categoryService.CreateCategoryAsync(newCategory);
             return Results.Created($"/categories/{category.Id}", category);
         }).RequireAuthorization();
 
-        group.MapPut("/{id}", async (int id, NewCategoryDTO updatedCategory, FinanceDBContext db) =>
+        group.MapPut("/{id}", async (int id, NewCategoryDTO updatedCategory, ICategoryService categoryService) =>
         {
-            var category = await db.Categories.FindAsync(id);
-            if (category is null) return Results.NotFound();
-
-            category.Name = updatedCategory.Name;
-            category.Description = updatedCategory.Description;
-
-            await db.SaveChangesAsync();
-            return Results.Ok(category);
+            var success = await categoryService.UpdateCategoryAsync(id, updatedCategory);
+            return success ? Results.Ok() : Results.NotFound();
         }).RequireAuthorization();
 
-        group.MapDelete("/{id}", async (int id, FinanceDBContext db) =>
+        group.MapDelete("/{id}", async (int id, FinanceDBContext db, ICategoryService categoryService) =>
         {
-            var category = await db.Categories.FindAsync(id);
-            if (category is not null)
-                db.Categories.Remove(category);
-                
-            await db.SaveChangesAsync();
-            return Results.NoContent();
+            var success = await categoryService.DeleteCategoryAsync(id);
+            return success ? Results.NoContent() : Results.NotFound();
         }).RequireAuthorization();
 
         return group;
