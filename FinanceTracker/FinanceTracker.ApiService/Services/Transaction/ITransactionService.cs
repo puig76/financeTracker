@@ -9,6 +9,7 @@ public interface ITransactionService
     Task<TransactionDTO?> GetTransactionByIdAsync(string id);
     Task<IEnumerable<TransactionDTO>> GetAllTransactionsAsync(string userId);
     Task<IEnumerable<TransactionDTO>> GetTransactionsByCategoryIdAsync(int categoryId, string userId);
+    Task<IEnumerable<TransactionDTO>> GetTransactionsByDateRangeAsync(DateOnly startDate, DateOnly endDate, string userId);
     Task<bool> UpdateTransactionAsync(string id, UpdateTransactionDTO updatedTransaction);
     Task<bool> DeleteTransactionAsync(string id);
 }

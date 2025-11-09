@@ -75,6 +75,15 @@ public class TransactionService(FinanceDBContext context) : ITransactionService
         return entities.Select(e => e.ToDTO());
     }
 
+    public Task<IEnumerable<TransactionDTO>> GetTransactionsByDateRangeAsync(DateOnly startDate, DateOnly endDate, string userId)
+    {
+        var entities = context.Transactions
+            .Where(t => t.Date >= startDate && t.Date <= endDate && t.UserId == Guid.Parse(userId))
+            .ToListAsync();
+
+        return Task.FromResult(entities.Result.Select(e => e.ToDTO()));
+    }
+
     public async Task<bool> UpdateTransactionAsync(string id, UpdateTransactionDTO updatedTransaction)
     {
         var entity = await context.Transactions.FindAsync(Guid.Parse(id));

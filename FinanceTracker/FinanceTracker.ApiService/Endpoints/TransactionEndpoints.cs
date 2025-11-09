@@ -68,6 +68,21 @@ public static class TransactionEndpoints
         .WithName("GetTransactionsByCategoryId")
         .WithSummary("Retrieves transactions by category ID.")
         .WithDescription("Fetches a list of financial transactions that belong to a specific category using the category's unique identifier.");
+        
+        group.MapPost("/by-date-range", async (DateFilterDTO dateFilter, ClaimsPrincipal user, ITransactionService transactionService) =>
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var userId = userIdClaim.Value;
+            var transactions = await transactionService.GetTransactionsByDateRangeAsync(dateFilter.StartDate, dateFilter.EndDate, userId);
+            return Results.Ok(transactions);
+        }).WithName("GetTransactionsByDateRange")
+        .WithSummary("Retrieves transactions by date range.")
+        .WithDescription("Fetches a list of financial transactions that fall within a specified date range.");
 
         group.MapDelete("/{id}", async (string id, ITransactionService transactionService) =>
         {

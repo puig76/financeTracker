@@ -4,5 +4,6 @@ public record class TransactionDTO(
     Guid Id,
     decimal Amount,
     DateOnly Date,
-    string Description
+    string Description,
+    int CategoryId
 );
