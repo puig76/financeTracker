@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 using FinanceTracker.ApiService.Endpoints;
 using FinanceTracker.ApiService.Services.Transaction;
 using FinanceTracker.ApiService.Services.Category;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,15 +26,43 @@ builder.Services.AddProblemDetails(o =>
     };
 });
 builder.Services.AddExceptionHandler<Global_ExceptionHandler>();
+//builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    // Agregamos esquema de seguridad JWT
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Components ??= new();
+        document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
+        {
+            ["bearerAuth"] = new()
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = "Ingrese su token JWT aquí"
+            }
+        };
+
+        document.SecurityRequirements = new List<OpenApiSecurityRequirement>
+        {
+            new()
+            {
+                [ new OpenApiSecurityScheme
+                    { Reference = new OpenApiReference
+                        { Type = ReferenceType.SecurityScheme, Id = "bearerAuth" } }
+                ] = new List<string>()
+            }
+        };
+
+        return Task.CompletedTask;
+    });
+});
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 builder.Services.AddAuthorization();
 
-
-
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 builder.AddNpgsqlDbContext<FinanceDBContext>("postgresdb");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -64,6 +93,14 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+}
+
+if (app.Environment.IsDevelopment())
+{
+    // Puedes proteger el UI con JWT si lo deseas:
+    var docs = app.MapGroup("/docs").RequireAuthorization(); // <- elimina esta línea si lo quieres público
+    docs.MapOpenApi();
+    docs.MapScalarApiReference();
 }
 
 //app.UseHttpsRedirection();

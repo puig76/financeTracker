@@ -20,7 +20,9 @@ public static class AuthEndpoints
             }
 
             return Results.Ok(token);
-        }).WithName("Login");
+        }).WithName("Login")
+        .WithSummary("User login")
+        .WithDescription("Authenticates a user and returns JWT access and refresh tokens.");
 
         group.MapPost("/register", async (UserRegisterDTO request, IAuthService authService) =>
         {
@@ -31,7 +33,9 @@ public static class AuthEndpoints
             }
 
             return Results.CreatedAtRoute("Login", new {username = user.Username }, user);
-        });
+        }).WithName("Register")
+        .WithSummary("User registration")
+        .WithDescription("Registers a new user with the provided details.");
 
         group.MapPost("/refresh-token", async (RefreshTokenRequestDTO request, IAuthService authService) =>
         {
@@ -40,7 +44,10 @@ public static class AuthEndpoints
                 return Results.Unauthorized();
 
             return Results.Ok(result);
-        });
+        })
+        .WithName("RefreshToken")
+        .WithSummary("Refreshes JWT tokens")
+        .WithDescription("Generates new access and refresh tokens using a valid refresh token.");
 
         group.MapGet("/me", async (ClaimsPrincipal user, IAuthService authService) =>
         {
@@ -58,7 +65,10 @@ public static class AuthEndpoints
             }
 
             return Results.Ok(userInfo);
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+        .WithName("GetCurrentUser")
+        .WithSummary("Gets current user info")
+        .WithDescription("Retrieves information about the currently authenticated user.");
 
         group.MapPost("/logout", async (ClaimsPrincipal user, IAuthService authService) =>
         {
@@ -70,7 +80,10 @@ public static class AuthEndpoints
             }
 
             return Results.Ok();
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+        .WithName("Logout")
+        .WithSummary("User logout")
+        .WithDescription("Logs out the currently authenticated user and invalidates their refresh token.");
 
         group.MapPatch("/change-password", async (ClaimsPrincipal user, ChangePasswordDTO changePasswordDTO, IAuthService authService) =>
         {
@@ -88,7 +101,10 @@ public static class AuthEndpoints
             }
 
             return Results.Ok("Password changed successfully.");
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+        .WithName("ChangePassword")
+        .WithSummary("Change user password")
+        .WithDescription("Allows the currently authenticated user to change their password.");
 
         group.MapPut("/update-profile", async (ClaimsPrincipal user, UpdateUserDTO updateUserDTO, IAuthService authService) =>
         {
@@ -106,7 +122,10 @@ public static class AuthEndpoints
             }
 
             return Results.Ok("Profile updated successfully.");
-        }).RequireAuthorization();
+        }).RequireAuthorization()
+        .WithName("UpdateUserProfile")
+        .WithSummary("Update user profile")
+        .WithDescription("Allows the currently authenticated user to update their profile information.");
         
         return group;
     }
