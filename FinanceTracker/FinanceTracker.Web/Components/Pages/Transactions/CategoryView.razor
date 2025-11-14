@@ -1,0 +1,48 @@
+﻿@using FinanceTracker.Web.Models.Categories
+@using FinanceTracker.Web.Models.Transactions
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@if (Transactions is null || !Transactions.Any())
+{
+    <p>No transactions found for this category.</p>
+    return;
+}
+else 
+{
+<div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" aria-expanded="false" data-bs-target=@($"#{GetCollapseId()}") aria-controls=@GetCollapseId()>
+        <TransactionHeader Name=@Category.Name TotalAmount=@getTotalAmount()/>
+      </button>
+    </h2>
+    <div id=@GetCollapseId() class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <QuickGrid Items="@Transactions">       
+            <PropertyColumn Property="@(p => p.Id)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Amount)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Date)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Description)" Sortable="true" />
+        </QuickGrid></div>
+    </div>  
+</div>
+
+}
+
+
+@code {
+
+    [Parameter]
+    public CategoryModel? Category { get; set; }
+
+    [Parameter]
+    public IQueryable<Transaction>? Transactions { get; set; }
+
+    private decimal getTotalAmount()
+    {
+      return Transactions?.Sum(p => p.Amount)??0;
+    }
+    private string GetCollapseId()
+    {
+        return $"collapse{Category?.Id}";
+    }
+}

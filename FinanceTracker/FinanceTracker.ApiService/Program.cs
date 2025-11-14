@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 using FinanceTracker.ApiService.Endpoints;
 using FinanceTracker.ApiService.Services.Transaction;
 using FinanceTracker.ApiService.Services.Category;
-using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,50 +20,34 @@ builder.Services.AddProblemDetails(o =>
     o.CustomizeProblemDetails = (context) =>
     {
         context.ProblemDetails.Instance = $"{context.HttpContext.Request?.Method} {context.HttpContext.Request?.Path.Value}";
-        context.ProblemDetails.Extensions.Add("requestId",context.HttpContext.TraceIdentifier);
-        Activity? activity = context.HttpContext.Features.Get<IHttpActivityFeature>()?.Activity;
+        context.ProblemDetails.Extensions.Add("requestId", context.HttpContext.TraceIdentifier);
+        // Use the current Activity for trace id when available
+        var activity = Activity.Current;
         context.ProblemDetails.Extensions.Add("traceId1", activity?.Id);
     };
 });
 builder.Services.AddExceptionHandler<Global_ExceptionHandler>();
-//builder.Services.AddOpenApi();
-builder.Services.AddOpenApi(options =>
-{
-    // Agregamos esquema de seguridad JWT
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
-    {
-        document.Components ??= new();
-        document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
-        {
-            ["bearerAuth"] = new()
-            {
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-                Description = "Ingrese su token JWT aquí"
-            }
-        };
-
-        document.SecurityRequirements = new List<OpenApiSecurityRequirement>
-        {
-            new()
-            {
-                [ new OpenApiSecurityScheme
-                    { Reference = new OpenApiReference
-                        { Type = ReferenceType.SecurityScheme, Id = "bearerAuth" } }
-                ] = new List<string>()
-            }
-        };
-
-        return Task.CompletedTask;
-    });
-});
+// Register OpenAPI generator (basic). Custom document transformers referencing
+// Microsoft.OpenApi.Models were removed to avoid hard dependency on that package.
+builder.Services.AddOpenApi();
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 builder.Services.AddAuthorization();
 
-builder.AddNpgsqlDbContext<FinanceDBContext>("postgresdb");
+// Register EF Core DbContext using Npgsql (configured for .NET 10 / EF Core 10)
+{
+    var conn = builder.Configuration.GetConnectionString("postgresdb") ?? builder.Configuration["postgresdb"];
+    if (string.IsNullOrWhiteSpace(conn))
+    {
+        throw new InvalidOperationException("Postgres connection string not configured. Please set ConnectionStrings:postgresdb or postgresdb in configuration.");
+    }
+
+    builder.Services.AddDbContext<FinanceDBContext>(options =>
+    {
+        options.UseNpgsql(conn);
+    });
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

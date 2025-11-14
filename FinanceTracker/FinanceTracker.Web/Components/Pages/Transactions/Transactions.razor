@@ -1,0 +1,62 @@
+﻿@page "/transactions"
+@using FinanceTracker.Web.Models.Categories
+@using FinanceTracker.Web.Models.Transactions
+
+@inject TransactionApiClient TransactionApiClient
+@inject CategoryApiClient CategoryApiClient
+
+<h3>Transactions</h3>
+
+<div class="container">
+    <div class="mb-3">
+        <label for="startDate" class="form-label">Start Date:</label>
+        <input type="date" id="startDate" class="form-control" @bind="startDate" />     
+    </div>
+    <div class="mb-3">  
+        <label for="endDate" class="form-label">End Date:</label>
+        <input type="date" id="endDate" class="form-control" @bind="endDate" /> 
+    </div>
+
+    <div>
+        <button class="btn btn-primary" @onclick="FilterTransactions">Filter</button>
+    </div>
+</div>
+
+<div class="accordion" id="accordionExample">
+@if(categories is not null && categories.Any())
+{
+    @foreach(var category in categories)
+    {
+        var categoryTransactions = transactions.Where(t => t.CategoryId == category.Id).AsQueryable();
+        if(categoryTransactions.Any())
+        {
+            <CategoryView Category="category" Transactions="categoryTransactions" />
+        }
+    }
+}
+else
+{
+    <p>No categories found.</p>
+}
+</div>
+
+
+@code {
+    DateOnly startDate = GetFirstDayOfMonth(DateTime.UtcNow);
+    DateOnly endDate = DateOnly.FromDateTime(DateTime.UtcNow);
+    private List<Transaction> transactions = new();
+    private IQueryable<CategoryModel> categories = new List<CategoryModel>().AsQueryable();
+    protected async override Task OnInitializedAsync()
+    {
+        await FilterTransactions();
+        categories = await CategoryApiClient.GetCategoriesAsync();
+    }
+    private async Task FilterTransactions()
+    {
+        transactions = await TransactionApiClient.GetTransactionsByDateRangeAsync(startDate, endDate);
+    }
+    private static DateOnly GetFirstDayOfMonth(DateTime date)
+    {
+        return new DateOnly(date.Year, date.Month, 1);
+    }
+}
